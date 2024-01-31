@@ -48,6 +48,8 @@ INSTALL_JAVA=true
 INSTALL_GO=true
 INSTALL_C=true
 INSTALL_DOCKER=true
+INSTALL_SFML=true
+INSTALL_NCURSES=true;
 
 # Update Submodule
 git submodule update --init --recursive
@@ -94,6 +96,18 @@ if [ INSTALL_GO == true ]; then
   display "Go Start"
   sudo dnf install -y golang
   log "Go End"
+fi
+
+if [ INSTALL_SFML == true ] then
+  display "Start SFML"
+  sudo dnf install -y SFML-devel
+  log "End SFML"
+fi
+
+if [INSTALL_NCURSES == true] then
+  display "Start NCursive"
+  sudo dnf install -y ncurses-devel
+  log "End NCurses"
 fi
 
 display "Start Python"
@@ -150,16 +164,6 @@ display "Start File Managers"
 if [ ! "$(command -v yazi)" ]; then
   cargo install --locked yazi-fm
 fi
-# GUI
-if [ ! "$(command -v thunar)" ]; then
-  sudo dnf install -y thunar thunar-archive-plugin thunar-media-tags-plugin
-  mkdir -p "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/"
-  cp "$SCRIPT_DIR/Thunar/thunar.xml" "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/"
-  mkdir -p "$HOME/.config/Thunar"
-  cp "$SCRIPT_DIR/Thunar/uca.xml" "$HOME/.config/Thunar"
-  cp "$SCRIPT_DIR/Thunar/accels.scm" "$HOME/.config/Thunar"
-fi
-log "End File Managers"
 
 display "Start Communication"
 # discord
@@ -171,6 +175,12 @@ if [ ! "$(command -v teams-for-linux)" ]; then
   sudo flatpak install -y flathub com.github.IsmaelMartinez.teams_for_linux
 fi
 log "End Communication"
+
+display "Install criterion"
+
+sudo ./$SCRIPT_DIR/criterion/install_criterion.sh
+
+log "End criterion"
 
 sudo dnf install -y dnf-plugins-core
 sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
