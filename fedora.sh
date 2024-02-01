@@ -63,6 +63,9 @@ sudo dnf update -y
 sudo dnf install -y htop vim curl figlet neofetch
 sudo dnf group install -y 'Development Tools'
 
+display "git"
+sudo dnf install -y git
+
 display "ZSH"
 if [ ! "$(command -v zsh)" ]; then
   sudo dnf install -y zsh fontawesome-fonts
@@ -77,6 +80,8 @@ display "Start Flatpak"
 sudo dnf install -y flatpak
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 log "End Flatpak"
+
+#default language
 
 display "Start Rust"
 if [ ! "$(command -v cargo)" ]; then
@@ -147,11 +152,8 @@ display "Start Terminal Emulators"
 sudo dnf install -y kitty
 mkdir -p "$HOME/.config/kitty/"
 cp "$SCRIPT_DIR/kitty/kitty.conf" "$HOME/.config/kitty/"
-#make kitty the default terminal
-if [[ sudo update-alternatives --list | grep x-terminal-emulator == 0 ]]; then
-  sudo update-alternatives --set x-terminal-emulator /usr/bin/kitty
-fi
-log "End Terminal Emulators"
+
+
 
 display "Start Modern replacement"
 cargo install eza fcp
@@ -160,16 +162,30 @@ sudo dnf install -y tldr bat ripgrep fzf fd-find
 log "End Modern replacement"
 
 display "Start File Managers"
+
 # terminal base
 if [ ! "$(command -v yazi)" ]; then
   cargo install --locked yazi-fm
 fi
 
+#add font on terminal
+
+sudo mkdir ~/.local/share/font/
+sudo cp -r terminal_font/ ~/.local/share/font/
+
+#folder creation
+
+mkdir "$HOME/Github_Public_Porfile/"
+mkdir "$HOME/Project_Epitech/"
+mkdir "$HOME/Personnal_Project/"
+
 display "Start Communication"
+
 # discord
 if [ ! "$(command -v Discord)" ]; then
   sudo flatpak install -y flathub com.discordapp.Discord
 fi
+
 # teams for linux
 if [ ! "$(command -v teams-for-linux)" ]; then
   sudo flatpak install -y flathub com.github.IsmaelMartinez.teams_for_linux
@@ -183,9 +199,6 @@ sudo ./$SCRIPT_DIR/criterion/install_criterion.sh
 log "End criterion"
 
 sudo dnf install -y dnf-plugins-core
-sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
-sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
-sudo dnf install -y brave-browser
 
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
