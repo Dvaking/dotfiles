@@ -44,12 +44,16 @@ CRONTAB_ROOT="$SCRIPT_DIR/crontab/root"
 mkdir -p "$HOME/.config/" "$HOME/Epitech"
 
 # define what you want to install
-INSTALL_JAVA=true
-INSTALL_GO=true
-INSTALL_C=true
 INSTALL_DOCKER=true
+
 INSTALL_SFML=true
 INSTALL_NCURSES=true;
+
+INSTALL_JAVA=true
+INSTALL_C=true
+INSTALL_PYTHON=true
+INSTALL_JS=true
+INSTALL_TS=true
 
 # Update Submodule
 git submodule update --init --recursive
@@ -93,14 +97,16 @@ if [ ! "$(command -v cargo)" ]; then
 fi
 log "End Rust"
 
-display "Start Nodejs"
-sudo dnf install -y nodejs
-log "End Nodejs"
+if [ INSTALL_JS == true ] then
+  display "Start JS"
+  sudo dnf install -y nodejs npm
+  log "End JS"
+fi
 
-if [ INSTALL_GO == true ]; then
-  display "Go Start"
-  sudo dnf install -y golang
-  log "Go End"
+if [ INSTALL_TS == true ] then
+  display "Start TS"
+  sudo npm install -g typescript
+  log "End TS"
 fi
 
 if [ INSTALL_SFML == true ] then
@@ -115,9 +121,11 @@ if [INSTALL_NCURSES == true] then
   log "End NCurses"
 fi
 
-display "Start Python"
-sudo dnf install -y python3-pip
-log "Start Python"
+if [INSTALL_PYTHON == true] then
+  display "Start Python"
+  sudo dnf install -y python3-pip
+  log "End Python"
+fi
 
 if [ INSTALL_JAVA == true ]; then
   display "Java Start"
@@ -134,26 +142,23 @@ fi
 
 
 if [ INSTALL_DOCKER == true ]; then
-  display "Start Docker Engine"
+  display "Start Docker Engine" # docker
   if [ ! "$(command -v docker)" ]; then
     sudo dnf -y install dnf-plugins-core
     sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-    sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    if ! getent group docker >/dev/null; then
-      echo "Creating group: docker"
-      sudo groupadd docker
-    fi
+    echo "Creating group: docker"
+    sudo groupadd docker
     sudo usermod -aG docker "$USER"
+    sudo newgrp docker
   fi
   log "End Docker Engine"
 fi
 
-display "Start Terminal Emulators"
+display "Start Terminal Emulators" # kitty
+
 sudo dnf install -y kitty
 mkdir -p "$HOME/.config/kitty/"
 cp "$SCRIPT_DIR/kitty/kitty.conf" "$HOME/.config/kitty/"
-
-
 
 display "Start Modern replacement"
 cargo install eza fcp
@@ -169,7 +174,6 @@ if [ ! "$(command -v yazi)" ]; then
 fi
 
 #add font on terminal
-
 sudo mkdir ~/.local/share/font/
 sudo cp -r terminal_font/ ~/.local/share/font/
 
@@ -192,13 +196,31 @@ if [ ! "$(command -v teams-for-linux)" ]; then
 fi
 log "End Communication"
 
-display "Install criterion"
 
+display "Start functionnal programe"
+
+# tlp
+sudo dnf install tlp tlp-rdw
+sudo systemctl enable tlp.service
+
+log "End tlp"
+
+# rofi
+sudo dnf -y install rofi
+
+log "End rofi"
+
+# criterion
 sudo ./$SCRIPT_DIR/criterion/install_criterion.sh
 
 log "End criterion"
 
 sudo dnf install -y dnf-plugins-core
+
+
+#set keyboard shortcut
+sudo xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t string -s "kitty"
+sudo xfconf-query -c xfce4-keyboard-shortcuts -p "commmands/custom/<Super>f" -n -t string -s "rofi -show drun"
 
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
