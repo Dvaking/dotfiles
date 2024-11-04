@@ -5,35 +5,35 @@ set -e
 
 # Function to log messages
 log() {
-  local message="$1"
-  sudo sh -c "echo \"$(date +'%Y-%m-%d %H:%M:%S') $message\" >> \"$LOG_FILE\""
+    local message="$1"
+    sudo sh -c "echo \"$(date +'%Y-%m-%d %H:%M:%S') $message\" >> \"$LOG_FILE\""
 }
 
 # Function for displaying headers
 display() {
-  local header_text="$1"
-  local DISPLAY_COMMAND="echo"
+    local header_text="$1"
+    local DISPLAY_COMMAND="echo"
 
-  if [ "$(command -v figlet)" ]; then
-    DISPLAY_COMMAND="figlet"
-  fi
+    if [ "$(command -v figlet)" ]; then
+        DISPLAY_COMMAND="figlet"
+    fi
 
-  echo "--------------------------------------"
-  $DISPLAY_COMMAND "$header_text"
-  log "$header_text"
-  echo "--------------------------------------"
+    echo "--------------------------------------"
+    $DISPLAY_COMMAND "$header_text"
+    log "$header_text"
+    echo "--------------------------------------"
 }
 
 # Check if Script is Run as Root
 if [[ $EUID -ne 1000 ]]; then
-  echo "You must be a normal user to run this script, please run ./install.sh" 2>&1
-  exit 1
+    echo "You must be a normal user to run this script, please run ./install.sh" 2>&1
+    exit 1
 fi
 
 USERNAME=$(id -u -n 1000)
 
 if [[ "/home/$USERNAME" != "$HOME" ]]; then
-  exit 1
+    exit 1
 fi
 
 # Configuration
@@ -72,12 +72,12 @@ sudo dnf install -y git
 
 display "ZSH"
 if [ ! "$(command -v zsh)" ]; then
-  sudo dnf install -y zsh fontawesome-fonts
-  cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
-  mkdir "$HOME/.zsh"
-  cp "$SCRIPT_DIR/zsh/alias.zsh" "$HOME/.zsh"
-  cp "$SCRIPT_DIR/zsh/env.zsh" "$HOME/.zsh"
-  touch "$HOME/.zsh/kubectl.zsh"
+    sudo dnf install -y zsh fontawesome-fonts
+    cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
+    mkdir "$HOME/.zsh"
+    cp "$SCRIPT_DIR/zsh/alias.zsh" "$HOME/.zsh"
+    cp "$SCRIPT_DIR/zsh/env.zsh" "$HOME/.zsh"
+    touch "$HOME/.zsh/kubectl.zsh"
 fi
 
 display "Start Flatpak"
@@ -89,70 +89,70 @@ log "End Flatpak"
 
 display "Start Rust"
 if [ ! "$(command -v cargo)" ]; then
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust.sh
-  chmod +x /tmp/rust.sh
-  /tmp/rust.sh -y
-  rm -f /tmp/rust.sh
-  source "$HOME/.cargo/env"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust.sh
+    chmod +x /tmp/rust.sh
+    /tmp/rust.sh -y
+    rm -f /tmp/rust.sh
+    source "$HOME/.cargo/env"
 fi
 log "End Rust"
 
-if [ $INSTALL_JS == true ] then
-  display "Start JS"
-  sudo dnf install -y nodejs npm
-  log "End JS"
+if [ "$INSTALL_JS" == true ]; then
+    display "Start JS"
+    sudo dnf install -y nodejs npm
+    log "End JS"
 fi
 
-if [ $INSTALL_TS == true ] then
-  display "Start TS"
-  sudo npm install -g typescript
-  log "End TS"
+if [ "$INSTALL_TS" == true ]; then
+    display "Start TS"
+    sudo npm install -g typescript
+    log "End TS"
 fi
 
-if [ $INSTALL_SFML == true ] then
-  display "Start SFML"
-  sudo dnf install -y SFML-devel
-  log "End SFML"
+if [ "$INSTALL_SFML" == true ]; then
+    display "Start SFML"
+    sudo dnf install -y SFML-devel
+    log "End SFML"
 fi
 
-if [$INSTALL_NCURSES == true] then
-  display "Start NCursive"
-  sudo dnf install -y ncurses-devel
-  log "End NCurses"
+if [ "$INSTALL_NCURSES" == true ]; then
+    display "Start NCurses"
+    sudo dnf install -y ncurses-devel
+    log "End NCurses"
 fi
 
-if [$INSTALL_PYTHON == true] then
-  display "Start Python"
-  sudo dnf install -y python3-pip
-  log "End Python"
+if [ "$INSTALL_PYTHON" == true ]; then
+    display "Start Python"
+    sudo dnf install -y python3-pip
+    log "End Python"
 fi
 
-if [ $INSTALL_JAVA == true ]; then
-  display "Java Start"
-  sudo dnf install -y java
-  log "Java End"
+if [ "$INSTALL_JAVA" == true ]; then
+    display "Java Start"
+    sudo dnf install -y java
+    log "Java End"
 fi
 
-if [ $INSTALL_C == true ]; then
-  display "C Start"
-  sudo dnf group install -y 'C Development Tools and Libraries'
-  "$SCRIPT_DIR/criterion/install_criterion.sh"
-  log "C End"
+if [ "$INSTALL_C" == true ]; then
+    display "C Start"
+    sudo dnf group install -y 'C Development Tools and Libraries'
+    "$SCRIPT_DIR/criterion/install_criterion.sh"
+    log "C End"
 fi
 
-
-if [ $INSTALL_DOCKER == true ]; then
-  display "Start Docker Engine" # docker
-  if [ ! "$(command -v docker)" ]; then
-    sudo dnf -y install dnf-plugins-core
-    sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-    echo "Creating group: docker"
-    sudo groupadd docker
-    sudo usermod -aG docker "$USER"
-    sudo newgrp docker
-  fi
-  log "End Docker Engine"
+if [ "$INSTALL_DOCKER" == true ]; then
+    display "Start Docker Engine" # docker
+    if [ ! "$(command -v docker)" ]; then
+        sudo dnf -y install dnf-plugins-core
+        sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+        echo "Creating group: docker"
+        sudo groupadd docker
+        sudo usermod -aG docker "$USER"
+        sudo newgrp docker
+    fi
+    log "End Docker Engine"
 fi
+
 
 display "Start Terminal Emulators" # kitty
 
@@ -170,7 +170,7 @@ display "Start File Managers"
 
 # terminal base
 if [ ! "$(command -v yazi)" ]; then
-  cargo install --locked yazi-fm
+    cargo install --locked yazi-fm
 fi
 
 #add font on terminal
@@ -187,12 +187,12 @@ display "Start Communication"
 
 # discord
 if [ ! "$(command -v Discord)" ]; then
-  sudo flatpak install -y flathub com.discordapp.Discord
+    sudo flatpak install -y flathub com.discordapp.Discord
 fi
 
 # teams for linux
 if [ ! "$(command -v teams-for-linux)" ]; then
-  sudo flatpak install -y flathub com.github.IsmaelMartinez.teams_for_linux
+    sudo flatpak install -y flathub com.github.IsmaelMartinez.teams_for_linux
 fi
 log "End Communication"
 
