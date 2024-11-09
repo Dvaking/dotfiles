@@ -72,13 +72,13 @@ sudo dnf install -y git
 
 display "ZSH"
 if [ ! "$(command -v zsh)" ]; then
-    sudo dnf install -y zsh fontawesome-fonts
-    cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
-    mkdir "$HOME/.zsh"
-    cp "$SCRIPT_DIR/zsh/alias.zsh" "$HOME/.zsh"
-    cp "$SCRIPT_DIR/zsh/env.zsh" "$HOME/.zsh"
-    touch "$HOME/.zsh/kubectl.zsh"
+    sudo dnf install -y zsh fontawesome-fonts    
 fi
+cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
+mkdir "$HOME/.zsh"
+cp "$SCRIPT_DIR/zsh/alias.zsh" "$HOME/.zsh"
+cp "$SCRIPT_DIR/zsh/env.zsh" "$HOME/.zsh"
+touch "$HOME/.zsh/kubectl.zsh"
 
 display "Start Flatpak"
 sudo dnf install -y flatpak
