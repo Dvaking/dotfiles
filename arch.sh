@@ -41,7 +41,9 @@ START=$(date +%s)
 LOG_FILE="/var/log/installation.log"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 CRONTAB_ROOT="$SCRIPT_DIR/crontab/root"
+
 mkdir -p "$HOME/.config/" "$HOME/Epitech"
+sudo pacman -S otf-font-awesome
 
 # define what language you want to install
 INSTALL_SFML=true
@@ -55,7 +57,7 @@ INSTALL_TS=true
 
 # software
 INSTALL_DOCKER=true
-INSTALL_DISCORD=true
+INSTALL_DISCORD=false
 INSTALL_TEAMS=true
 
 # terminal
@@ -64,7 +66,7 @@ INSTALL_HOW_MY_ZSH=true
 
 # browser
 INSTALL_FIREFOX=true
-INSTALL_CHROME=true
+INSTALL_CHROME=false
 
 # code editor
 INSTALL_NEOVIM=true
@@ -145,9 +147,15 @@ fi
 
 # Install Oh My Zsh
 if [ "$INSTALL_HOW_MY_ZSH" = true ]; then
-    display "Installing Oh My Zsh"
-    sudo curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
-    cp "$SCRIPT_DIR/zsh/*" "$HOME/.config/zsh/"
+	display "ZSH"
+	if [ ! "$(command -v zsh)" ]; then
+		sudo dnf install -y zsh fontawesome-fonts    
+	fi
+	cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
+	mkdir -p "$HOME/.zsh"
+	cp "$SCRIPT_DIR/zsh/alias.zsh" "$HOME/.zsh"
+	cp "$SCRIPT_DIR/zsh/env.zsh" "$HOME/.zsh"
+	touch "$HOME/.zsh/kubectl.zsh"
 fi
 
 # Install Firefox
