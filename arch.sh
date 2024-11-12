@@ -81,6 +81,16 @@ sudo pacman -Syu
 # Install Dependencies
 sudo pacman -S --noconfirm base-devel git
 
+# Install Audio
+sudo pacman -S pipewire pipewire-alsa pipewire-pulse wireplumber
+systemctl --user --now enable pipewire pipewire-pulse wireplumber
+sudo pacman -S pavucontrol
+
+# Install Bluetooth
+sudo pacman -S bluez bluez-utils bluez-deprecated-tools
+sudo systemctl start bluetooth.service
+sudo systemctl enable bluetooth.service
+
 # Install Docker
 if [ "$INSTALL_DOCKER" = true ]; then
     display "Installing Docker"
@@ -183,6 +193,27 @@ sudo pacman -S --noconfirm rofi
 # Install criterion
 display "Installing Criterion"
 "$SCRIPT_DIR/criterion/install_criterion.sh"
+
+while true; do
+	read -p "Download hyprland conf ? [y/n]" rep
+	case $rep in
+		[Yy]* )
+			echo "Start init"
+			mkdir -p "$HOME/.config"
+			mkdir -p "$HOME/.config/hypr"
+			cp -r "hypr/*" "$HOME/.config/hypr/"
+			pacman -S hyprpaper waypaper hypridle hyprlock waybar
+			break
+			;;
+		[Nn]* )
+			echo "Init"
+			break
+			;;
+		* )
+			echo "Download hyprland conf ? [y/n]"
+			;;
+	esac
+done
 
 # End
 END=$(date +%s)
