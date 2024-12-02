@@ -159,7 +159,7 @@ fi
 if [ "$INSTALL_HOW_MY_ZSH" = true ]; then
 	display "ZSH"
 	if [ ! "$(command -v zsh)" ]; then
-		sudo pacman -S install zsh fontawesome-fonts    
+		sudo pacman -S zsh    
 	fi
 	cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
 	mkdir -p "$HOME/.zsh"
