@@ -3,6 +3,45 @@
 # Enable exit on error
 set -e
 
+# Variables
+START=$(date +%s)
+LOG_FILE="$HOME/install.log"
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+USERNAME=$(id -un 1000)
+
+# Configuration
+START=$(date +%s)
+LOG_FILE="/var/log/installation.log"
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+CRONTAB_ROOT="$SCRIPT_DIR/crontab/root"
+
+## Langages
+INSTALL_C=true
+INSTALL_JS_TS=true
+INSTALL_PYTHON=true
+INSTALL_HASKELL=true
+INSTALL_JAVA=true
+
+INSTALL_NCURSES=true
+INSTALL_SFML=true
+INSTALL_DOCKER=true
+
+# software
+DISCORD_VESKTOP=false
+INSTALL_TEAMS=true
+
+INSTALL_FIREFOX=true
+INSTALL_CHROME=false
+
+INSTALL_NEOVIM=true
+INSTALL_VSCODE=true
+
+# terminal
+ZSH=true
+
+mkdir -p "$HOME/.config/" "$HOME/Epitech"
+sudo pacman -S otf-font-awesome
+
 # Function to log messages
 log() {
     local message="$1"
@@ -30,47 +69,9 @@ if [[ $EUID -ne 1000 ]]; then
     exit 1
 fi
 
-USERNAME=$(id -u -n 1000)
-
 if [[ "/home/$USERNAME" != "$HOME" ]]; then
     exit 1
 fi
-
-# Configuration
-START=$(date +%s)
-LOG_FILE="/var/log/installation.log"
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-CRONTAB_ROOT="$SCRIPT_DIR/crontab/root"
-
-mkdir -p "$HOME/.config/" "$HOME/Epitech"
-sudo pacman -S otf-font-awesome
-
-# define what language you want to install
-INSTALL_SFML=true
-INSTALL_NCURSES=true;
-
-INSTALL_JAVA=true
-INSTALL_C=true
-INSTALL_PYTHON=true
-INSTALL_JS=true
-INSTALL_TS=true
-
-# software
-INSTALL_DOCKER=true
-INSTALL_DISCORD=false
-INSTALL_TEAMS=true
-
-# terminal
-INSTALL_KITTY=true
-INSTALL_HOW_MY_ZSH=true
-
-# browser
-INSTALL_FIREFOX=true
-INSTALL_CHROME=false
-
-# code editor
-INSTALL_NEOVIM=true
-INSTALL_VSCODE=true
 
 # Update Submodule
 git submodule update --init --recursive
@@ -78,8 +79,20 @@ git submodule update --init --recursive
 # Update System
 sudo pacman -Syu
 
-# Install Dependencies
-sudo pacman -S --noconfirm base-devel git
+# Installation de base
+log "Installation de paquets de base"
+sudo pacman -S --noconfirm base-devel git neovim htop curl rofi kitty figlet
+mkdir -p "$HOME/.config/kitty/"
+cp "$SCRIPT_DIR/kitty/kitty.conf" "$HOME/.config/kitty/"
+
+# Installation de yay
+if ! command -v yay &>/dev/null; then
+    log "Installation de yay"
+    git clone https://aur.archlinux.org/yay.git /tmp/yay
+    cd /tmp/yay && makepkg -si --noconfirm
+    cd - && rm -rf /tmp/yay
+fi
+
 
 # Install Audio
 sudo pacman -S pipewire pipewire-alsa pipewire-pulse wireplumber
@@ -91,83 +104,74 @@ sudo pacman -S bluez bluez-utils bluez-deprecated-tools
 sudo systemctl start bluetooth.service
 sudo systemctl enable bluetooth.service
 
-# Install Docker
-if [ "$INSTALL_DOCKER" = true ]; then
-    display "Installing Docker"
-    sudo pacman -S --noconfirm docker
-    sudo systemctl enable docker
-    sudo systemctl start docker
-    sudo usermod -aG docker $USERNAME
-fi
-
-# Install SFML
-if [ "$INSTALL_SFML" = true ]; then
-    display "Installing SFML"
-    sudo pacman -S --noconfirm sfml
-fi
-
-# Install Ncurses
-if [ "$INSTALL_NCURSES" = true ]; then
-    display "Installing Ncurses"
-    sudo pacman -S --noconfirm ncurses
-fi
-
-# Install Java
-if [ "$INSTALL_JAVA" = true ]; then
-    display "Installing Java"
-    sudo pacman -S --noconfirm jdk-openjdk
-fi
-
-# Install C
+# Installation des langages
 if [ "$INSTALL_C" = true ]; then
-    display "Installing C"
-    sudo pacman -S --noconfirm gcc
+    display "C"
+    sudo pacman -S --noconfirm gcc clang gcovr
+    log "C installé"
 fi
 
-# Install Python
-if [ "$INSTALL_PYTHON" = true ]; then
-    display "Installing Python"
-    sudo pacman -S --noconfirm python
-fi
-
-# Install JS
-if [ "$INSTALL_JS" = true ]; then
-    display "Installing JS"
+if [ "$INSTALL_JS_TS" = true ]; then
+    display "JS / TS"
     sudo pacman -S --noconfirm nodejs npm
+    npm install -g typescript
+    log "JS / TS installé"
 fi
 
-# Install TS
-if [ "$INSTALL_TS" = true ]; then
-    display "Installing TS"
-    sudo npm install -g typescript
+if [ "$INSTALL_PYTHON" = true ]; then
+    display "Python"
+    sudo pacman -S --noconfirm python python-pip
+    log "Python installé"
 fi
 
-
-# Install Kitty
-if [ "$INSTALL_KITTY" = true ]; then
-    display "Installing Kitty"
-    sudo pacman -S --noconfirm kitty
+if [ "$INSTALL_HASKELL" = true ]; then
+    display "Haskell"
+    sudo pacman -S --noconfirm ghc stack
+    log "Haskell installé"
 fi
+
+if [ "$INSTALL_JAVA" = true ]; then
+    display "Java"
+    sudo pacman -S --noconfirm jdk-openjdk
+    log "Java installé"
+fi
+
+if [ "$INSTALL_NCURSES" = true ]; then
+    display "Ncurses"
+    sudo pacman -S --noconfirm ncurses
+    log "Ncurses installé"
+fi
+
+if [ "$INSTALL_SFML" = true ]; then
+    display "SFML"
+    sudo pacman -S --noconfirm sfml
+    log "SFML installé"
+fi
+
+if [ "$INSTALL_DOCKER" = true ]; then
+    display "Docker"
+    sudo pacman -S --noconfirm docker
+    sudo systemctl enable --now docker
+    sudo usermod -aG docker $USER
+    log "Docker installé"
+fi
+
 
 # Install Visual Studio Code
 if [ "$INSTALL_VSCODE" = true ]; then
-    display "Installing Visual Studio Code"
+    display "Visual Studio Code"
     sudo pacman -S --noconfirm code
 fi
 
 # Install Oh My Zsh
-if [ "$INSTALL_HOW_MY_ZSH" = true ]; then
-	display "ZSH"
-	if [ ! "$(command -v zsh)" ]; then
-		sudo pacman -S zsh    
-	fi
-	cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
-	mkdir -p "$HOME/.zsh"
-	cp "$SCRIPT_DIR/zsh/alias.zsh" "$HOME/.zsh"
-	cp "$SCRIPT_DIR/zsh/env.zsh" "$HOME/.zsh"
-	touch "$HOME/.zsh/kubectl.zsh"
+if [ "$ZSH" = true ]; then
+    display "ZSH"
+    sudo pacman -S --noconfirm zsh
+    cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
+    log "ZSH installé"
 fi
 
+# Installation des logiciels
 # Install Firefox
 if [ "$INSTALL_FIREFOX" = true ]; then
     display "Installing Firefox"
@@ -184,6 +188,12 @@ fi
 if [ "$INSTALL_NEOVIM" = true ]; then
     display "Installing Neovim"
     sudo pacman -S --noconfirm neovim
+fi
+
+if [ "$DISCORD_VESKTOP" = true ]; then
+    display "Vesktop"
+    yay -S --noconfirm vesktop-bin
+    log "Vesktop installé"
 fi
 
 # Install rofi
