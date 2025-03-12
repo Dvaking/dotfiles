@@ -3,17 +3,12 @@
 # Enable exit on error
 set -e
 
-# Variables
-START=$(date +%s)
-LOG_FILE="$HOME/install.log"
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-USERNAME=$(id -un 1000)
-
-# Configuration
+# Variable
 START=$(date +%s)
 LOG_FILE="/var/log/installation.log"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 CRONTAB_ROOT="$SCRIPT_DIR/crontab/root"
+
 
 ## Langages
 INSTALL_C=true
@@ -26,21 +21,13 @@ INSTALL_NCURSES=true
 INSTALL_SFML=true
 INSTALL_DOCKER=true
 
-# software
-DISCORD_VESKTOP=false
-INSTALL_TEAMS=true
-
-INSTALL_FIREFOX=true
-INSTALL_CHROME=false
-
-INSTALL_NEOVIM=true
-INSTALL_VSCODE=true
-
-# terminal
+## Logiciels
+DISCORD_VESKTOP=true
+FIREFOX=true
+VSCODE=true
 ZSH=true
-
-mkdir -p "$HOME/.config/" "$HOME/Epitech"
-sudo pacman -S otf-font-awesome
+FOLDER_MANAGER=true
+HYPRLAND=true
 
 # Function to log messages
 log() {
@@ -63,168 +50,157 @@ display() {
     echo "--------------------------------------"
 }
 
-# Check if Script is Run as Root
-if [[ $EUID -ne 1000 ]]; then
-    echo "You must be a normal user to run this script, please run ./install.sh" 2>&1
-    exit 1
-fi
+## Configuration
+display "Start config"
 
-if [[ "/home/$USERNAME" != "$HOME" ]]; then
-    exit 1
-fi
+log "Update"
+sudo pacman -Syu --noconfirm
+log "End Update"
 
-# Update Submodule
-git submodule update --init --recursive
+log "Folder"
+mkdir -p "$HOME/.config/"
+mkdir -p "$HOME/Project_Epitech/"
+mkdir -p "$HOME/Personnal_Project/"
+log "End folder"
 
-# Update System
-sudo pacman -Syu
+log "Font"
+sudo pacman -S --noconfirm otf-font-awesome
+sudo pacman -S --noconfirm ttf-font-awesome
+sudo pacman -S --noconfirm noto-fonts-emoji
+mkdir -p "$HOME/.config/fontconfig/"
+cp "$SCRIPT_DIR/font/fonts.conf" "$HOME/.config/fontconfig/"
+log "End font"
 
-# Installation de base
-log "Installation de paquets de base"
-sudo pacman -S --noconfirm base-devel git neovim htop curl rofi kitty figlet
-mkdir -p "$HOME/.config/kitty/"
-cp "$SCRIPT_DIR/kitty/kitty.conf" "$HOME/.config/kitty/"
+log "Default package"
+sudo pacman -S --noconfirm base-devel git htop curl wofi kitty figlet eza thunar neovim
+log "End default package"
 
-# Installation de yay
-if ! command -v yay &>/dev/null; then
-    log "Installation de yay"
-    git clone https://aur.archlinux.org/yay.git /tmp/yay
-    cd /tmp/yay && makepkg -si --noconfirm
-    cd - && rm -rf /tmp/yay
-fi
-
-
-# Install Audio
-sudo pacman -S pipewire pipewire-alsa pipewire-pulse wireplumber
+log "Audio"
+sudo pacman -S --noconfirm pipewire pipewire-alsa pipewire-pulse wireplumber
 systemctl --user --now enable pipewire pipewire-pulse wireplumber
 sudo pacman -S pavucontrol
+log "End audio"
 
-# Install Bluetooth
-sudo pacman -S bluez bluez-utils bluez-deprecated-tools
-sudo systemctl start bluetooth.service
-sudo systemctl enable bluetooth.service
+log "Bluetooth"
+sudo pacman -S --noconfirm bluez bluez-utils bluez-deprecated-tools
+systemctl --user --now enable bluetooth.service
+systemctl start bluetooth.service
+log "End bluetooth"
 
-# Installation des langages
-if [ "$INSTALL_C" = true ]; then
-    display "C"
-    sudo pacman -S --noconfirm gcc clang gcovr
-    log "C installé"
+log "End config"
+
+## Install yay
+if ! command -v yay &>/dev/null; then
+	display "Install Yay"
+	git clone https://aur.archlinux.org/yay.git
+	cd yay
+	makepkg -si --noconfirm
+	cd ../
+	rm -rf yay
+	log "End yay"
 fi
 
-if [ "$INSTALL_JS_TS" = true ]; then
-    display "JS / TS"
-    sudo pacman -S --noconfirm nodejs npm
-    npm install -g typescript
-    log "JS / TS installé"
+## Language
+
+if [ "$INSTALL_C" = true]; then
+	display "C"
+	sudo pacman -S --noconfirm gcc clang gcov
+	log "End C"
 fi
 
-if [ "$INSTALL_PYTHON" = true ]; then
-    display "Python"
-    sudo pacman -S --noconfirm python python-pip
-    log "Python installé"
+if [ "$INSTALL_JS_TS" = true]; then
+	display "JS / TS"
+	sudo pacman -S --noconfirm nodejs npm
+	npm install -g typescript
+	log "End JS / TS"
 fi
 
-if [ "$INSTALL_HASKELL" = true ]; then
-    display "Haskell"
-    sudo pacman -S --noconfirm ghc stack
-    log "Haskell installé"
+if [ "$INSTALL_PYTHON" = true]; then
+	display "Python"
+	sudo pacman -S --noconfirm python python-pip
+	log "End Python"
 fi
 
-if [ "$INSTALL_JAVA" = true ]; then
-    display "Java"
-    sudo pacman -S --noconfirm jdk-openjdk
-    log "Java installé"
+if [ "$INSTALL_HASKELL" = true]; then
+	display "Haskell"
+	sudo pacman -S --noconfirm ghc stack
+	log "End Haskell"
 fi
 
-if [ "$INSTALL_NCURSES" = true ]; then
-    display "Ncurses"
-    sudo pacman -S --noconfirm ncurses
-    log "Ncurses installé"
+if [ "$INSTALL_JAVA" = true]; then
+	display "Java"
+	sudo pacman -S --noconfirm gcc jdk-openjdk
+	log "End Java"
 fi
 
-if [ "$INSTALL_SFML" = true ]; then
-    display "SFML"
-    sudo pacman -S --noconfirm sfml
-    log "SFML installé"
+if [ "$INSTALL_NCURSES" = true]; then
+	display "Ncurses"
+	sudo pacman -S --noconfirm ncurses
+	log "End Ncurses"
 fi
 
-if [ "$INSTALL_DOCKER" = true ]; then
-    display "Docker"
-    sudo pacman -S --noconfirm docker
-    sudo systemctl enable --now docker
-    sudo usermod -aG docker $USER
-    log "Docker installé"
+if [ "$INSTALL_SFML" = true]; then
+	display "SFML"
+	sudo pacman -S --noconfirm sfml
+	log "End SFML"
 fi
 
-
-# Install Visual Studio Code
-if [ "$INSTALL_VSCODE" = true ]; then
-    display "Visual Studio Code"
-    sudo pacman -S --noconfirm code
+if [ "$INSTALL_DOCKER" = true]; then
+	display "Docker"
+    	sudo pacman -S --noconfirm docker
+    	sudo systemctl enable --now docker
+    	sudo usermod -aG docker $USER
+	sudo pacman -S --noconfirm docker-compose
+    	log "End Docker"
 fi
 
-# Install Oh My Zsh
-if [ "$ZSH" = true ]; then
-    display "ZSH"
-    sudo pacman -S --noconfirm zsh
-    cp "$SCRIPT_DIR/zsh/.zshrc" "$HOME/.zshrc"
-    log "ZSH installé"
-fi
+## SoftWare
 
-# Installation des logiciels
-# Install Firefox
-if [ "$INSTALL_FIREFOX" = true ]; then
-    display "Installing Firefox"
-    sudo pacman -S --noconfirm firefox
-fi
-
-# Install Chrome
-if [ "$INSTALL_CHROME" = true ]; then
-    display "Installing Chrome"
-    sudo pacman -S --noconfirm google-chrome
-fi
-
-# Install Neovim
-if [ "$INSTALL_NEOVIM" = true ]; then
-    display "Installing Neovim"
-    sudo pacman -S --noconfirm neovim
+if [ "$VSCODE" = true ]; then
+	display "Vscode"
+	yay -S --noconfirm visual-studio-code-bin
+	log "End Vscode"
 fi
 
 if [ "$DISCORD_VESKTOP" = true ]; then
-    display "Vesktop"
-    yay -S --noconfirm vesktop-bin
-    log "Vesktop installé"
+	display "Discord"
+	yay -S --noconfirm vesktop
+	log "End Discord"
 fi
 
-# Install rofi
-display "Installing Rofi"
-sudo pacman -S --noconfirm rofi
+if [ "$FIREFOX" = true ]; then
+	display "Firefox"
+	sudo pacman -S --noconfirm firefox
+	log "End Firefox"
+fi
 
-# Install criterion
-display "Installing Criterion"
-"$SCRIPT_DIR/criterion/install_criterion.sh"
+if [ "$ZSH" = true ]; then
+	display "Zsh"
+	sudo pacman -S --noconfirm zsh
+	cp -r "$SCRIPT_DIR/zsh/.zsh/" "$HOME/"
+	cp -r "$SCRIPT_DIR/zsh/.p10k.zsh" "$HOME/"
+	cp -r "$SCRIPT_DIR/zsh/.zshrc" "$HOME/"
+	log "End Zsh"
+fi
 
-while true; do
-	read -p "Download hyprland conf ? [y/n]" rep
-	case $rep in
-		[Yy]* )
-			echo "Start init"
-			mkdir -p "$HOME/.config"
-			mkdir -p "$HOME/.config/hypr"
-			cp -r "hypr/*" "$HOME/.config/hypr/"
-			pacman -S hyprpaper waypaper hypridle hyprlock waybar
-			break
-			;;
-		[Nn]* )
-			echo "Init"
-			break
-			;;
-		* )
-			echo "Download hyprland conf ? [y/n]"
-			;;
-	esac
-done
+
+if [ "$HYPRLAND" = true ]; then
+	display "Hyprland"
+	sudo pacman -S --noconfirm hypaper hypridle hyprlock waybar
+	mkdir -p "$HOME/.config/hypr/"
+	cp -r "$SCRIPT_DIR/hypr/fonts" "$SCRIPT_DIR/hypr/wallpaper" "$SCRIPT_DIR/hypr/hypridle.conf" "$SCRIPT_DIR/hypr/hyprland.conf" "$SCRIPT_DIR/hypr/hyprlock.conf" "$SCRIPT_DIR/hypr/hyprpaper.conf" "$HOME/.config/hypr/"
+	log "End Hyprland"
+fi
+
+if [ "$FOLDER_MANAGER" = true ]; then
+	display "Folder"
+	sudo pacman -S --noconfirm ranger
+	log "End folder"
+fi
+
 
 # End
 END=$(date +%s)
 echo "Installation took $(($END - $START)) seconds"
+
+
