@@ -202,5 +202,3 @@ fi
 # End
 END=$(date +%s)
 echo "Installation took $(($END - $START)) seconds"
-
-
